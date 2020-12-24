@@ -4,12 +4,61 @@ import { Card, Button, Text, Avatar, Input, Header } from "react-native-elements
 import { AntDesign, Entypo } from "@expo/vector-icons";
 import { AuthContext } from "../providers/AuthProvider";
 import { useNavigation } from "@react-navigation/native";
-
+import CommentComponent from "../components/CommentComponent";
+import { storeDataJSON, getDataJSON, removeData } from "../functions/AsynchronousStorageFunctions";
+import moment from "moment";
 
 const PostComponent = (props) => {
+    const useStackNavigation = useNavigation();
+    const [commentList, setCommentList] = useState([]);
+    const [notificationList, setNotificationList] = useState([]);
+    const [like, setLike] = useState(0);
+    let notifyUser = props.email.concat("notify");
+
+
+
+    const getLikeData = async () => {
+        await getDataJSON(props.post.concat("likes")).then((data) => {
+            if (data == null) {
+                setLike(0);
+            } else setLike(data);
+        });
+    };
+    useEffect(() => {
+        getLikeData();
+    }, [])
+    const getCommentData = async () => {
+        await getDataJSON(props.post).then((data) => {
+            if (data == null) {
+                setCommentList([]);
+            } else setCommentList(data);
+        });
+    };
+
+    getCommentData();
+
+    const getNotificationData = async () => {
+        await getDataJSON(notifyUser).then((data) => {
+            if (data == null) {
+                setNotificationList([]);
+            } else setNotificationList(data);
+        });
+    };
+
+
+    useEffect(() => {
+        getNotificationData();
+    }, [])
+
+    let numberOfComments = "";
+    numberOfComments = "Comment(".concat(commentList.length.toString()).concat(")");
+    let likeButton = "";
+    likeButton = "Like(".concat(like.toString()).concat(")");
 
     
     return (
+        <AuthContext.Consumer>
+            {(auth) => (
                 <View>
                     <Card containerStyle={{ backgroundColor: '#cacfe8' }}>
                         <View
@@ -92,7 +141,8 @@ const PostComponent = (props) => {
                     </Card>
 
                 </View>
-            
+             )}
+        </AuthContext.Consumer>
     )
 
 }
